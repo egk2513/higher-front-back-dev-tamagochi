@@ -1,9 +1,30 @@
+"""Точка входа в игру: игровой цикл тамагочи-кликера"""
+
 import os
 
+from game.clicker import MyRandomClicker
+from game.exceptions import NotEnoughMoney, TamagochiIsGone
+from game.game import MyGame
 from game.models import Food, Medicine
+from game.tamagochi import MyTamagochi
+
+MENU_COMMANDS: dict[str, str] = {
+    '1': 'Пойти на работу',
+    '2': 'Купить еду',
+    '3': 'Купить лекарство',
+    '4': 'Покормить',
+    '5': 'Вылечить',
+    '6': 'Играть',
+    '7': 'Отдых',
+    '0': 'Выход',
+}
 
 
-def main():
+def main() -> None:
+    """
+    Точка входа в игру: создаёт питомца, кликер и игру,
+    затем запускает игровой цикл обработки команд
+    """
     all_food = [
         Food(name='Бургер', satiety=20, price=40),
         Food(name='Салат', satiety=10, price=20),
@@ -14,62 +35,60 @@ def main():
         Medicine(name='Ибупрофен', price=30, heal_hp=20, number_of_uses=2)
     ]
 
-    tamagochi = SimpleTamagochi()  #  Вместо SimpleTamagochi импортируйте и создайте инстанс от своей реализации
-    clicker = SimpleRandomClicker(10, 20) #  Вместо SimpleRandomClicker импортируйте и создайте инстанс от своей реализации
-    game = SimpleGame(tamagochi, clicker, all_food=all_food, all_medicine=all_medicine) #  Вместо SimpleGame импортируйте и создайте инстанс от своей реализации
+    tamagochi = MyTamagochi()
+    clicker = MyRandomClicker(10, 20)
+    game = MyGame(
+        tamagochi, clicker, all_food=all_food, all_medicine=all_medicine,
+    )
 
-    print("Добро пожаловать в Тамагочи-кликер!")
+    print('Добро пожаловать в Тамагочи-кликер!')
     output = ''
 
     while True:
         print(output)
-
-        print(f"Сумка с едой: {game.food}")
-        print(f"Сумка с лекарствами: {game.medicine}")
+        print(f'Сумка с едой: {game.food}')
+        print(f'Сумка с лекарствами: {game.medicine}')
 
         status = game.get_status()
         print(
-            f"\nСтатус: голод {status['hunger']}, здоровье {status['hp']}, "
-            f"энергия {status['energy']}, монет {status['coins']}\n"
+            f'\nСтатус: голод {status["hunger"]}, здоровье {status["hp"]}, '
+            f'энергия {status["energy"]}, усталость {status["fatigue"]}, '
+            f'монет {status["coins"]}\n'
         )
-        if game.tamagochi.is_sick():
-            print("=======Тамагочи болеет======")
-            print("=======Отдых действует менее эффективно=======")
-        print("1. Пойти на работу")
-        print("2. Купить еду")
-        print("3. Купить лекарство")
-        print("4. Покормить")
-        print("5. Вылечить")
-        print("6. Играть")
-        print("7. Отдых")
-        print("0. Выход")
+        if status['sick']:
+            print('Тамагочи болеет')
+            print('Отдых действует менее эффективно')
+        menu = (f'{cmd}. {text}' for cmd, text in MENU_COMMANDS.items())
+        print('\n'.join(menu))
 
-        match input("Выберите действие: "):
-            case "1":
-                income = game.work()
-                output = f'Вы заработали {income} монет'
-                game.tamagochi.update()
-            case "2":
-                game.buy_food()
-            case "3":
-                game.buy_medicine()
-            case "4":
-                game.feed_tamagochi()
+        try:
+            match input('Выберите действие: '):
+                case '1':
+                    output = f'Вы заработали {game.work()} монет'
+                case '2':
+                    output = game.buy_food()
+                case '3':
+                    output = game.buy_medicine()
+                case '4':
+                    output = game.feed_tamagochi()
+                case '5':
+                    output = game.heal_tamagochi()
+                case '6':
+                    output = game.play_with_tamagochi()
+                case '7':
+                    output = game.rest_tamagochi()
+                case '0':
+                    # Выход до очистки экрана
+                    break
+                case _:
+                    output = 'Неверная команда'
+        except NotEnoughMoney:
+            output = 'Не хватает монет'
+        except TamagochiIsGone:
+            print('Тамагочи умер. Игра окончена')
+            break
 
-            case "5":
-                game.heal_tamagochi()
-            case "6":
-                game.play_with_tamagochi()
-                output = 'Вы поиграли с питомцем'
-            case "7":
-                game.rest_tamagochi()
-                output = 'Питомец отдохнул'
-            case "0":
-                break
-            case _:
-                output = "Неверная команда"
-
-        os.system('clear')
+        os.system('cls' if os.name == 'nt' else 'clear')
 
 
 if __name__ == "__main__":

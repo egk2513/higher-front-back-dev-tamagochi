@@ -12,7 +12,10 @@ class Food:
 
     def __repr__(self) -> str:
         """Метод для красивого принтинга объекта"""
-        return f'{self.name} стоимость: {self.price}, утоляет голод на {self.satiety} единиц'
+        return (
+            f'{self.name} стоимость: {self.price}, '
+            f'утоляет голод на {self.satiety} единиц'
+        )
 
 
 @dataclass
@@ -26,15 +29,21 @@ class Medicine:
 
     def is_empty(self) -> bool:
         """
-        Проверяет, осталось ли еще лекарство
+        Проверяет, закончилось ли лекарство
 
-        :return: True если осталось, иначе False
+        :return: True если использований не осталось, иначе False
         """
         return self.uses >= self.number_of_uses
 
     def __repr__(self) -> str:
         """Метод для красивого принтинга объекта"""
         return (
-            f'{self.name} стоимость: {self.price}, лечит на {self.heal_hp} HP, '
-            f'использований: {self.number_of_uses - self.uses}/{self.number_of_uses}'
+            f'{self.name} стоимость: {self.price}, '
+            f'лечит на {self.heal_hp} HP, '
+            f'использований: {self.number_of_uses - self.uses}'
+            f'/{self.number_of_uses}'
         )
+
+    def use(self) -> None:
+        """Использовать одну дозу лекарства"""
+        self.uses += 1
