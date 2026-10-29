@@ -1,5 +1,6 @@
 """Модуль с интерфейсом и реализацией класса игры"""
 
+import copy
 from abc import ABC, abstractmethod
 
 from .clicker import AbstractClicker
@@ -285,7 +286,9 @@ class MyGame(AbstractGame):
                 f'есть {self._coins}'
             )
         self._coins -= item.price
-        bag.append(item)
+
+        # Создаем копию объекта при покупке, чтобы избежать проблемы с общими ссылками
+        bag.append(copy.deepcopy(item))
         return f'Куплено: {item.name}'
 
     def _choose_index(self, items: list) -> int | None:
